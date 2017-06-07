@@ -52,6 +52,7 @@ class Shopify {
             $product_title = $product['title'];
             $product_image = $product['images'][0]['src'];
             $product_department = $product['product_type'];
+            $product_url = 'https://'.$this->shopify_store.'.myshopify.com/products/'.$product['handle'];
 
             foreach($product['variants'] as $variant) {
                 $product_variant_id = $variant['id'];
@@ -61,6 +62,7 @@ class Shopify {
                 $variant_data = array(
                   $product_title,
                   $product_image,
+                  $product_url,
                   $product_department,
                   $product_variant_id,
                   $product_variant_price,
