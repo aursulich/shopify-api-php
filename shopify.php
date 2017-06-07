@@ -33,6 +33,49 @@ class Shopify {
 
   }
 
+  public function getFeed($filename){
+
+    $products_count = $this->makeRequest('products/count.json', 'GET', array('published_status'=>'published'));
+    $limit = 250;
+
+    $products_count = json_decode($products_count, TRUE);
+    $pages = ceil($products_count["count"]/$limit);
+
+    $file = fopen($filename,"w");
+
+    for($i=1; $i<=$pages; $i++) {
+
+        $products = $this->makeRequest('/products.json', 'GET', array("limit" => $limit, "page" => $i, "published_status" => "published"));
+        $products = json_decode($products, TRUE);
+
+        foreach($products["products"] as $product) {
+            $product_title = $product['title'];
+            $product_image = $product['images'][0]['src'];
+            $product_department = $product['product_type'];
+
+            foreach($product['variants'] as $variant) {
+                $product_variant_id = $variant['id'];
+                $product_variant_price = $variant['price'];
+                $product_variant_sku = $variant['sku'];
+
+                $variant_data = array(
+                  $product_title,
+                  $product_image,
+                  $product_department,
+                  $product_variant_id,
+                  $product_variant_price,
+                  $product_variant_sku
+                );
+
+                fputcsv($file, $variant_data);
+            }
+        }
+    }
+
+    fclose($file);
+
+  }
+
   private function curlSetopts($ch, $method, $payload, $request_headers)
 	{
 		curl_setopt($ch, CURLOPT_HEADER, false);
