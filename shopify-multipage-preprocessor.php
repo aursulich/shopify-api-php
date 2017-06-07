@@ -6,7 +6,7 @@ define('SHOPIFY_STORE', 'avantlink');
 
 $shopify = new Shopify(SHOPIFY_KEY, SHOPIFY_PASSWORD, SHOPIFY_STORE);
 
-//$shopify->makeRequest('products.json', 'GET', array('limit'=>'250'));
+echo $shopify->makeRequest('products.json', 'GET', array('limit'=>'250'));
 
 $products_count = $shopify->makeRequest('products/count.json', 'GET', array('published_status'=>'published'));
 $limit = 250;
@@ -23,12 +23,23 @@ for($i=1; $i<=$pages; $i++) {
 
     foreach($products["products"] as $product) {
         $product_title = $product['title'];
-        echo $product_title;
+        $product_image = $product['images'][0]['src'];
+        $product_department = $product['product_type'];
+
         foreach($product['variants'] as $variant) {
             $product_variant_id = $variant['id'];
             $product_variant_price = $variant['price'];
+            $product_variant_sku = $variant['sku'];
 
-            $variant_data = array($product_title, $product_variant_id, $product_variant_price);
+
+            $variant_data = array(
+              $product_title,
+              $product_image,
+              $product_department,
+              $product_variant_id,
+              $product_variant_price,
+              $product_variant_sku
+            );
             fputcsv($file, $variant_data);
         }
     }
