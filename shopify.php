@@ -45,6 +45,11 @@ class Shopify {
 
     for($i=1; $i<=$pages; $i++) {
 
+    $file = fopen($filename,"w");
+    $headers = 'Product Name|Parent ID|Variant ID|SKU|Retail Price|Sale Price|Variant Link|Variant Image|Medium Image|Small Image|Category|Description|Barcode|Option 1|Option 2|Option 3|Tags|Brand
+';
+    fwrite($file, $headers);
+
         $products = $this->makeRequest('/products.json', 'GET', array("limit" => $limit, "page" => $i, "published_status" => "published"));
         $products = json_decode($products, TRUE);
 
@@ -69,7 +74,7 @@ class Shopify {
                   $product_variant_sku
                 );
 
-                fputcsv($file, $variant_data);
+                fputcsv($file, $variant_data, $delimiter = "|");
             }
         }
     }
