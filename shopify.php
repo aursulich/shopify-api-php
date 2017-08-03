@@ -88,6 +88,8 @@ class Shopify {
                     $product_variant_image = $image['src'];
                   }
                 }
+                $product_variant_medium_image = preg_replace('#(\.[a-zA-Z]{3}\?)#', '_200x200$1', $product_variant_image);
+                $product_variant_thumbnail_image = preg_replace('#(\.[a-zA-Z]{3}\?)#', '_100x100$1', $product_variant_image);
 
                 $variant_data = array(
                   $product_title,
@@ -98,8 +100,8 @@ class Shopify {
                   $product_variant_sale_price,
                   $product_variant_url,
                   $product_variant_image,
-                  $product_variant_image,
-                  $product_variant_image,
+                  $product_variant_medium_image,
+                  $product_variant_thumbnail_image,
                   $product_department,
                   $product_description,
                   $product_variant_barcode,
