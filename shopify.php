@@ -15,12 +15,12 @@ class Shopify {
 
   }
 
-  public function makeRequest($url_slug, $method, $query, $request_headers){
+  public function makeRequest($url_slug, $method, $query){
 
     $url = $this->shopify_url.$url_slug;
     $url = $this->curlAppendQuery($url, $query);
     $ch = curl_init($url);
-    $this->curlSetopts($ch, $method, $request_headers);
+    $this->curlSetopts($ch, $method);
 
     $response = curl_exec($ch);
 		$errno = curl_errno($ch);
@@ -78,7 +78,7 @@ class Shopify {
 
   }
 
-  private function curlSetopts($ch, $method, $payload, $request_headers)
+  private function curlSetopts($ch, $method)
 	{
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -90,13 +90,6 @@ class Shopify {
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 		curl_setopt ($ch, CURLOPT_CUSTOMREQUEST, $method);
-		if (!empty($request_headers)) curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
-
-		if ($method != 'GET' && !empty($payload))
-		{
-			if (is_array($payload)) $payload = http_build_query($payload);
-			curl_setopt ($ch, CURLOPT_POSTFIELDS, $payload);
-		}
 	}
 
   private function curlAppendQuery($url, $query)
