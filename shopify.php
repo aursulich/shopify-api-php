@@ -41,6 +41,9 @@ class Shopify {
     $products_count = json_decode($products_count, TRUE);
     $pages = ceil($products_count["count"]/$limit);
 
+    $shop_get = $this->makeRequest('shop.json', 'GET', '');
+    $shop_info = json_decode($shop_get, TRUE);
+
     $file = fopen($filename,"w");
 
     for($i=1; $i<=$pages; $i++) {
@@ -55,9 +58,13 @@ class Shopify {
 
         foreach($products["products"] as $product) {
             $product_title = $product['title'];
-            $product_image = $product['images'][0]['src'];
+            $product_id = $product['id'];
+            $product_image = $product['image']['src'];
             $product_department = $product['product_type'];
-            $product_url = 'https://'.$this->shopify_store.'.myshopify.com/products/'.$product['handle'];
+            $product_url = 'https://'.$shop_info['shop']['domain'].'/products/'.$product['handle'];
+            $product_description = strip_tags($product['body_html']);
+            $product_tags = $product['tags'];
+            $product_vendor = $product['vendor'];
 
             foreach($product['variants'] as $variant) {
                 $product_variant_id = $variant['id'];
