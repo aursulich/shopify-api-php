@@ -69,16 +69,45 @@ class Shopify {
             foreach($product['variants'] as $variant) {
                 $product_variant_id = $variant['id'];
                 $product_variant_price = $variant['price'];
+                $product_variant_sale_price = $variant['compare_at_price'];
+                $product_variant_url = $product_url . '?variant=' . $product_variant_id;
                 $product_variant_sku = $variant['sku'];
+                $product_variant_barcode = $variant['barcode'];
+                if ($variant['option1'] === 'Default') {
+                  $product_variant_option1 = '';
+                }
+                else {
+                  $product_variant_option1 = $variant['option1'];
+                }
+                $product_variant_option2 = $variant['option2'];
+                $product_variant_option3 = $variant['option3'];
+                $product_variant_image_id = $variant['image_id'];
+                $product_variant_image = $product_image;
+                foreach ($product['images'] as $image) {
+                  if ($image['id'] === $product_variant_image_id) {
+                    $product_variant_image = $image['src'];
+                  }
+                }
 
                 $variant_data = array(
                   $product_title,
-                  $product_image,
-                  $product_url,
-                  $product_department,
+                  $product_id,
                   $product_variant_id,
+                  $product_variant_sku,
                   $product_variant_price,
-                  $product_variant_sku
+                  $product_variant_sale_price,
+                  $product_variant_url,
+                  $product_variant_image,
+                  $product_variant_image,
+                  $product_variant_image,
+                  $product_department,
+                  $product_description,
+                  $product_variant_barcode,
+                  $product_variant_option1,
+                  $product_variant_option2,
+                  $product_variant_option3,
+                  $product_tags,
+                  $product_vendor
                 );
 
                 fputcsv($file, $variant_data, $delimiter = "|");
