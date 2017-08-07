@@ -15,12 +15,12 @@ class Shopify {
 
   }
 
-  public function makeRequest($url_slug, $method, $query, $request_headers){
+  public function makeRequest($url_slug, $method, $query){
 
     $url = $this->shopify_url.$url_slug;
     $url = $this->curlAppendQuery($url, $query);
     $ch = curl_init($url);
-    $this->curlSetopts($ch, $method, $request_headers);
+    $this->curlSetopts($ch, $method);
 
     $response = curl_exec($ch);
 		$errno = curl_errno($ch);
@@ -41,35 +41,78 @@ class Shopify {
     $products_count = json_decode($products_count, TRUE);
     $pages = ceil($products_count["count"]/$limit);
 
+    $shop_get = $this->makeRequest('shop.json', 'GET', '');
+    $shop_info = json_decode($shop_get, TRUE);
+
     $file = fopen($filename,"w");
 
     for($i=1; $i<=$pages; $i++) {
+
+    $file = fopen($filename,"w");
+    $headers = 'Product Name|Parent ID|Variant ID|SKU|Retail Price|Sale Price|Variant Link|Variant Image|Medium Image|Small Image|Category|Description|Barcode|Option 1|Option 2|Option 3|Tags|Brand
+';
+    fwrite($file, $headers);
 
         $products = $this->makeRequest('/products.json', 'GET', array("limit" => $limit, "page" => $i, "published_status" => "published"));
         $products = json_decode($products, TRUE);
 
         foreach($products["products"] as $product) {
             $product_title = $product['title'];
-            $product_image = $product['images'][0]['src'];
+            $product_id = $product['id'];
+            $product_image = $product['image']['src'];
             $product_department = $product['product_type'];
-            $product_url = 'https://'.$this->shopify_store.'.myshopify.com/products/'.$product['handle'];
+            $product_url = 'https://'.$shop_info['shop']['domain'].'/products/'.$product['handle'];
+            $product_description = strip_tags($product['body_html']);
+            $product_tags = $product['tags'];
+            $product_vendor = $product['vendor'];
 
             foreach($product['variants'] as $variant) {
                 $product_variant_id = $variant['id'];
                 $product_variant_price = $variant['price'];
+                $product_variant_sale_price = $variant['compare_at_price'];
+                $product_variant_url = $product_url . '?variant=' . $product_variant_id;
                 $product_variant_sku = $variant['sku'];
+                $product_variant_barcode = $variant['barcode'];
+                if ($variant['option1'] === 'Default') {
+                  $product_variant_option1 = '';
+                }
+                else {
+                  $product_variant_option1 = $variant['option1'];
+                }
+                $product_variant_option2 = $variant['option2'];
+                $product_variant_option3 = $variant['option3'];
+                $product_variant_image_id = $variant['image_id'];
+                $product_variant_image = $product_image;
+                foreach ($product['images'] as $image) {
+                  if ($image['id'] === $product_variant_image_id) {
+                    $product_variant_image = $image['src'];
+                  }
+                }
+                $product_variant_medium_image = preg_replace('#(\.[a-zA-Z]{3}\?)#', '_200x200$1', $product_variant_image);
+                $product_variant_thumbnail_image = preg_replace('#(\.[a-zA-Z]{3}\?)#', '_100x100$1', $product_variant_image);
 
                 $variant_data = array(
                   $product_title,
-                  $product_image,
-                  $product_url,
-                  $product_department,
+                  $product_id,
                   $product_variant_id,
+                  $product_variant_sku,
                   $product_variant_price,
-                  $product_variant_sku
+                  $product_variant_sale_price,
+                  $product_variant_url,
+                  $product_variant_image,
+                  $product_variant_medium_image,
+                  $product_variant_thumbnail_image,
+                  $product_department,
+                  $product_description,
+                  $product_variant_barcode,
+                  $product_variant_option1,
+                  $product_variant_option2,
+                  $product_variant_option3,
+                  $product_tags,
+                  $product_vendor
                 );
 
-                fputcsv($file, $variant_data);
+                fputcsv($file, $variant_data, $delimiter = "|");
             }
         }
     }
@@ -78,7 +121,7 @@ class Shopify {
 
   }
 
-  private function curlSetopts($ch, $method, $payload, $request_headers)
+  private function curlSetopts($ch, $method)
 	{
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -90,13 +133,6 @@ class Shopify {
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 		curl_setopt ($ch, CURLOPT_CUSTOMREQUEST, $method);
-		if (!empty($request_headers)) curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
-
-		if ($method != 'GET' && !empty($payload))
-		{
-			if (is_array($payload)) $payload = http_build_query($payload);
-			curl_setopt ($ch, CURLOPT_POSTFIELDS, $payload);
-		}
 	}
 
   private function curlAppendQuery($url, $query)
