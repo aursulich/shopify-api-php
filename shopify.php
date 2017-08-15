@@ -169,4 +169,11 @@ class ShopifyApiException extends Exception
 	function getResponseHeaders() { return $this->response_headers; }
 	function getResponse() { return $this->response; }
 }
+
+define('SHOPIFY_KEY', $argv[1]);
+define('SHOPIFY_PASSWORD', $argv[2]);
+define('SHOPIFY_STORE', $argv[3]);
+
+$shopify = new Shopify(SHOPIFY_KEY, SHOPIFY_PASSWORD, SHOPIFY_STORE);
+$shopify->getFeed(SHOPIFY_STORE . '.csv');
 ?>
